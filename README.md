@@ -305,6 +305,113 @@ xor__ ^`
     >>> 11
 
 ### 5.类属性和实例属性以及查找顺序
-    
+
+    #新式类
+    class D:
+        pass
+    class E:
+        pass
+    class C(E):
+        pass
+    class B(D):
+        pass
+    class A(B, C):
+        name="A"
+        def __init__(self):
+            self.name='obj'
+    a=A()
+    print(a.name)
+    print(A.__mro__)
+    #结果如下:
+    >>>obj
+    >>>(<class '__main__.A'>, <class '__main__.B'>, <class '__main__.D'>, <class '__main__.C'>, <class '__main__.E'>, <class 'object'>)
+
+### 6.静态方法、类方法以及对象方法
+
+    class Date:
+        #构造函数
+        def __init__(self, year, month, day):
+            self.year = year
+            self.month = month
+            self.day = day
+
+        def tomorrow(self):
+            self.day += 1
+        #静态方法
+        @staticmethod
+        def parse_from_string(date_str):
+            year, month, day = tuple(date_str.split("-"))
+            return Date(int(year), int(month), int(day))
+
+        @staticmethod
+        def valid_str(date_str):
+            year, month, day = tuple(date_str.split("-"))
+            if int(year)>0 and (int(month) >0 and int(month)<=12) and (int(day) >0 and int(day)<=31):
+                return True
+            else:
+                return False
+        #类方法
+        @classmethod
+        def from_string(cls, date_str):
+            year, month, day = tuple(date_str.split("-"))
+            return cls(int(year), int(month), int(day))
+
+        def __str__(self):
+            return "{year}/{month}/{day}".format(year=self.year, month=self.month, day=self.day)
+
+    if __name__ == "__main__":
+        new_day = Date(2018, 12, 31)
+        new_day.tomorrow()
+        print(new_day)
+
+        #2018-12-31
+        date_str = "2018-12-31"
+        year, month, day = tuple(date_str.split("-"))
+        new_day = Date(int(year), int(month), int(day))
+        print (new_day)
+
+        #用staticmethod完成初始化
+        new_day = Date.parse_from_string(date_str)
+        print (new_day)
+
+        #用classmethod完成初始化
+        new_day = Date.from_string(date_str)
+        print(new_day)
+
+        print(Date.valid_str("2018-12-32"))
 
 
+### 7.数据封装和私有属性
+使用__来是实现私有属性
+使用_User__来访问私有属性，没有绝对的私有属性，都有突破口来访问，用来规范化代码
+
+
+    from class_method import Date
+    class User:
+        def __init__(self, birthday):
+            self.__birthday = birthday
+        #使用双下划线实现私有属性
+        def get_age(self):
+            #返回年龄
+            return 2018 - self.__birthday.year
+
+
+    if __name__ == "__main__":
+        user = User(Date(1990,2,1))
+        # print(user._Student__birthday)
+        print(user._User__birthday)
+
+        print(user.get_age())
+
+
+
+
+### 8.python对象的自省机制
+
+### 9.super函数
+
+### 10.django rest framework中对多继承使用的经验
+
+### 11.python中的with语句
+
+### 12.contextlib实现上下文管理器
