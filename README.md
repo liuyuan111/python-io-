@@ -421,19 +421,329 @@ xor__ ^`
 
 
 # 五、自定义序列类
-  1. 序列类型分类：
+  
+  ## 1. 序列类型分类：
    + 容器序列 : `list、tuple、deque`
    + 扁平序列 : `str、bytes、bytearray、array.array`
    + 可变序列 :  `list， deque，bytearray、array`
    + 不可变   : `str、tuple、bytes`
     
-  2. 序列的abc继承关系  
+  ## 2. 序列的abc继承关系  
+    跟容器相关的数据结构的抽象基类都存在_collections_abc.py模块下。
+
+"Sequence"（不可变序列）, "MutableSequence"（可变序列）,
+我们看下不可变序列（Sequence）的源码是由哪些抽象函数协议组成的。
+
+    class Sequence(Reversible, Collection):
+
+        """All the operations on a read-only sequence.
+
+        Concrete subclasses must override __new__ or __init__,
+        __getitem__, and __len__.
+        """
+Sequence继承了Reversible（用于翻转）和Collection。
+
+我们再看看Collection的源码。
+
+    class Collection(Sized, Iterable, Container):
+
+        __slots__ = ()
+
+        @classmethod
+        def __subclasshook__(cls, C):
+            if cls is Collection:
+                return _check_methods(C,  "__len__", "__iter__", "__contains__")
+            return NotImplemented
+Collection 又分别继承Sized, Iterable, Container。我们看下这三个类的源码
+
+    class Sized(metaclass=ABCMeta):
+
+        __slots__ = ()
+
+        @abstractmethod
+        def __len__(self):
+            return 0
+
+        @classmethod
+        def __subclasshook__(cls, C):
+            if cls is Sized:
+                return _check_methods(C, "__len__")
+            return NotImplemented
+Sized实现了__len__使我们的序列具有长度。
+
+    class Iterable(metaclass=ABCMeta):
+
+        __slots__ = ()
+
+        @abstractmethod
+        def __iter__(self):
+            while False:
+                yield None
+
+        @classmethod
+        def __subclasshook__(cls, C):
+            if cls is Iterable:
+                return _check_methods(C, "__iter__")
+            return NotImplemented
+Iterable实现了__iter__使我们的序列可以迭代（for 操作）
+
+    class Container(metaclass=ABCMeta):
+
+        __slots__ = ()
+
+        @abstractmethod
+        def __contains__(self, x):
+            return False
+
+        @classmethod
+        def __subclasshook__(cls, C):
+            if cls is Container:
+                return _check_methods(C, "__contains__")
+            return NotImplemented
+Container实现了__contains__使我们可以使用 is in 判断是否存在序列中。
+
+通过上述的魔法函数组成了构成不可变序列的协议。
+
+对于可变序列MutableSequence，作为不可变序列Sequence的子类，我们看看它的源码多实现了哪些魔法函数。
+
+    class MutableSequence(Sequence):
+
+        __slots__ = ()
+
+        """All the operations on a read-write sequence.
+
+        Concrete subclasses must provide __new__ or __init__,
+        __getitem__, __setitem__, __delitem__, __len__, and insert().
+
+        """
+
+        @abstractmethod
+        def __setitem__(self, index, value):
+            raise IndexError
+
+        @abstractmethod
+        def __delitem__(self, index):
+            raise IndexError
+我们看到最主要的是新增了__setitem__用于赋值，__delitem__用于删除值。这两个魔法函数。
+
+如果我们想自定义一些序列类，只需要实现上述魔法函数（协议）即可。
         
 
-  3. 序列的+、+=和extend的区别
+  ## 3. 序列的+、+=和extend的区别：        
+    我们看下下面代码
 
-  4. 实现可切片的对象
-  5. bisect管理可排序序列
-  6. 什么时候我们不该用列表
-  7. 列表推导式、生成器表达式、字典推导式
+            a = [1, 2]
+            c = a + [3, 4]
+
+            # 就地加
+            a += (3, 4)
+            a += [3, 4]
+对于 + 两边的数据类型必须一致，而 += 只需要是序列类型即可。
+
+为什么 +=只要是序列就可以呢？
+
+我们看看+=的实现源码：
+
+    class MutableSequence(Sequence):
+
+        __slots__ = ()
+
+        """All the operations on a read-write sequence.
+
+        Concrete subclasses must provide __new__ or __init__,
+        __getitem__, __setitem__, __delitem__, __len__, and insert().
+
+        """
+        def extend(self, values):
+            'S.extend(iterable) -- extend sequence by appending elements from the iterable'
+            for v in values:
+                self.append(v)
+
+        def __iadd__(self, values):
+            self.extend(values)
+            return self
+在可变序列MutableSequence中的__iadd__就是实现 +=操作的，我们看到中间有调用
+
+extend，我们看看extend函数有要求的是可迭代类型。
+
+对于extend:
+
+
+`>>> a.extend(range(3))`
+
+    def extend(self, iterable): # real signature unknown; restored from __doc__
+        """ L.extend(iterable) -> None -- extend list by appending elements from the iterable """
+        pass
+我们看到extend内置源码实现原理接收一个可迭代对象。
+
+  ## 4. 实现可切片的对象
+下面是Python序列切片使用
+
+    # 模式[start:end:step]
+    """
+        其中，第一个数字start表示切片开始位置，默认为0；
+        第二个数字end表示切片截止（但不包含）位置（默认为列表长度）；
+        第三个数字step表示切片的步长（默认为1）。
+        当start为0时可以省略，当end为列表长度时可以省略，
+        当step为1时可以省略，并且省略步长时可以同时省略最后一个冒号。
+        另外，当step为负整数时，表示反向切片，这时start应该比end的值要大才行。
+    """
+    aList = [3, 4, 5, 6, 7, 9, 11, 13, 15, 17]
+    aList[::]  # 返回包含原列表中所有元素的新列表
+    aList[::-1]  # 返回包含原列表中所有元素的逆序列表
+    aList[::2]  # 隔一个取一个，获取偶数位置的元素
+    aList[1::2]  # 隔一个取一个，获取奇数位置的元素
+    aList[3:6]  # 指定切片的开始和结束位置
+    aList[0:100]  # 切片结束位置大于列表长度时，从列表尾部截断
+    aList[100:]  # 切片开始位置大于列表长度时，返回空列表
+
+    aList[len(aList):] = [9]  # 在列表尾部增加元素
+    aList[:0] = [1, 2]  # 在列表头部插入元素
+    aList[3:3] = [4]  # 在列表中间位置插入元素
+    aList[:3] = [1, 2]  # 替换列表元素，等号两边的列表长度相等
+    aList[3:] = [4, 5, 6]  # 等号两边的列表长度也可以不相等
+    aList[::2] = [0] * 3  # 隔一个修改一个
+    aList[::2] = ['a', 'b', 'c']  # 隔一个修改一个
+    aList[::2] = [1, 2]  # 左侧切片不连续，等号两边列表长度必须相等
+    aList[:3] = []  # 删除列表中前3个元素
+
+    del aList[:3]  # 切片元素连续
+    del aList[::2]  # 切片元素不连续，隔一个删一个
+下面是自定义一个不可变得序列类
+
+    import numbers
+
+    class Group:
+        #支持切片操作
+        # staffs 是一个list以便于实现对数据的管理
+        def __init__(self, group_name, company_name, staffs):
+            self.group_name = group_name
+            self.company_name = company_name
+            self.staffs = staffs
+
+        def __reversed__(self):
+            # 用于对数据的反转
+            self.staffs.reverse()
+
+        def __getitem__(self, item):
+            # 切片主要的实现函数
+            # item有两类 
+            # 当我们使用[:2]这种方式的时候item是切片类 item = {slice} slice(None, 2, None)
+            # 当使用[2]这种方式的时候item是一个int类型 item = {int} 2
+            # 下面返回的仍然是一个Group方便切片之后仍然可以切片
+            cls = type(self)
+            if isinstance(item, slice):
+                return cls(group_name=self.group_name, company_name=self.company_name, staffs=self.staffs[item])
+            elif isinstance(item, numbers.Integral):
+                return cls(group_name=self.group_name, company_name=self.company_name, staffs=[self.staffs[item]])
+
+        def __len__(self):
+            # 返回长度
+            return len(self.staffs)
+
+        def __iter__(self):
+            # 可迭代
+            return iter(self.staffs)
+
+        def __contains__(self, item):
+            # 使用 is in
+            if item in self.staffs:
+                return True
+            else:
+                return False
+
+
+    staffs = ["staff1", "staff2", "staff3", "staff4"]
+    group = Group(company_name="alibaba", group_name="user", staffs=staffs)
+ ## 5. bisect管理可排序序列
+  bisect介绍
+bisect是python的标准模块，是一个关于数组二分查找法的库，里面提供了在这里非常有用的三个函数bisect_left, bisect_right, bisect. 这三个参数都接受一个array和一个数字，返回将数字插入这个array后这个数字的位置（index），但并不真正执行插入操作。比如：
+
+    In[0]: import bisect
+    In[1]: bisect.bisect([1, 3, 5], 2)
+    Out[1]:
+1
+表示如果将2插入1 3 5中间，那么插进去之后的index则为返回值（本例，返回值为1），如果出现相同的值，bisect()函数选择将值插在后面也就是原有值的右侧：
+
+    In[0]: import bisect
+    In[1]: bisect.bisect([1, 3, 5], 3)
+    Out[1]:
+2
+bisect_left()函数选择将值插在前面也就是原有值的左侧：
+
+    In[0]: import bisect
+    In[1]: bisect.bisect_left([1, 3, 5], 3)
+    Out[1]:
+1
+另外bisect_right()函数是bisect()函数的别名，或者反之。
+
+利用bisect查找整数范围
+bisect函数是二分查找，既可以用来插入，当然也可以用来检索信息，比如查找值所属的区段／区间。
+
+前面我们提到的那个函数就可以利用bisect做改写:
+
+    mapping = {
+        0: 0,
+        1:	10,
+        2: 25,
+        3: 42,
+        4: 53,
+        5: 64,
+        6: 75,
+        7: 86,
+        8: 97,
+        9: 108,
+        10: 120,
+    }
+
+    i = bisect(range(100, 1001, 100), value)
+    discount = mapping[i]
+这种方案在业务方案多变，查询范围特别多的情况下具备极大的可维护性和性能优势。
   
+  ## 6. 什么时候我们不该用列表
+    使用array和 deque代替list
+    # 数组
+    import array
+    #array和list的一个重要区别， array只能存放指定的数据类型
+    my_array = array.array("i")
+    my_array.append(1)
+    my_array.append("abc")
+
+  ## 7. 列表推导式、生成器表达式、字典推导式
+    #用简单的方式去遍历可迭代对象生成需要格式的列表
+    int_list = [1,2,3,4,5]
+
+    qu_list = [item * item for item in int_list]
+    print (type(qu_list))
+    int_list = [1,2,-3,4,5]
+
+    qu_list = [item if item > 0 else abs(item) for item in int_list]
+
+    #笛卡尔积
+    int_list1 = [1,2]
+    int_list2 = [3,4]
+
+    qu_list = [(first, second) for first in int_list1 for second in int_list2]
+
+    my_dict = {
+        "key1":"bobby1",
+        "key2":"bobby2"
+    }
+
+    # qu_list = [(key, value) for key, value in my_dict.items()]
+    #
+    # qu_list2 = list(((key, value) for key, value in my_dict.items()))
+    #
+    # for item in qu_list2:
+    #     print (item)
+
+    int_list = [1,2,3,4,5]
+
+    def process_item(item):
+        return str(item)
+
+    int_dict = {process_item(item):item for item in int_list}
+    #列表生成式，第一：能用尽量用， 因为效率高
+    print (int_dict)
+
+
