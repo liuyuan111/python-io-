@@ -76,3 +76,45 @@ namedtuple时tuple的子类，节省空间，效率高，适用于创建一些�
     print(default_dict)
 
 # 五、deque
+`deque.extend()`直接在原deque上扩容不创建新对象
+    
+    from collections import deque
+    from queue import Queue
+    #双端队列
+    user_tuple = deque(('bobby1','bobby2'))
+    user_list = deque(['bobby1','bobby2'])
+    user_dict = deque({"bobby1":21,"bobby2":22})
+    print(user_dict)
+
+    user_list.appendleft('abc')
+    user_dict.clear()
+    user_tuple.copy()
+
+# 六、counter功能
+
+    from collections import Counter
+
+    users= ['bobby1','bobby2',3,4,5]
+    user_counter = Counter(users)
+
+    print(user_counter) 
+    print(Counter('aabbccdds'))
+
+# 七、ChainMap功能:
+
+    from collections import ChainMap
+
+    user_dict1 = {'a':'booby1','b':'booby2'}
+    user_dict2 = {'c':'booby2','d':'booby3'}
+
+    # for key,value in user_dict1.items():
+    #     print(key,value)
+    # for key,value in user_dict2.items():
+    #     print(key,value)
+
+    new_dict = ChainMap(user_dict1,user_dict2)
+    new_dict2 = new_dict.new_child({'e':'ccc'})
+    print(new_dict2.maps)
+    for key,value in new_dict.items():
+        print(key,value)
+    print(new_dict['c'])

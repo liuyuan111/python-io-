@@ -1,5 +1,5 @@
 from collections import deque
-
+from queue import Queue
 #双端队列
 user_tuple = deque(('bobby1','bobby2'))
 user_list = deque(['bobby1','bobby2'])
