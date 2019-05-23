@@ -750,12 +750,254 @@ bisect函数是二分查找，既可以用来插入，当然也可以用来检�
 # 六、深入dict和set
     
 ## 1.`collections`中的`abc`
-    
+    from collections.abc import Mapping, MutableMapping
+    #dict属于mapping类型
+
+    a = {}
+    print (isinstance(a, MutableMapping))
 
 ## 2.dict的常见用法
+    a = {"bobby1":{"company":"imooc"},
+        "bobby2": {"company": "imooc2"}
+        }
+    #clear
+    # a.clear()
+    # pass
+    b = a
+    #copy, 返回浅拷贝
+    new_dict = a.copy()
+    print(new_dict)
+    print(id(a),id(b),id(new_dict))
+    new_dict["bobby1"]["company"] = "imooc3"
+    import copy
+    new_dict2 = copy.deepcopy(a)
+    print(new_dict2)
+    new_dict2["bobby1"]["company"] = "imooc3"
+
+    print(new_dict)
+    print(a)
+
+
+    #formkeys
+    new_list = ["bobby1", "bobby2"]
+
+    new_dict = dict.fromkeys(new_list, {"company":"imooc"})
+
+    new_dict.update((("bobby","imooc"),))
+
 
 ## 3.dict的子类
+    
+    from random import randint
+
+    def load_list_data(total_nums, target_nums):
+        """
+        从文件中读取数据，以list的方式返回
+        :param total_nums: 读取的数量
+        :param target_nums: 需要查询的数据的数量
+        """
+        all_data = []
+        target_data = []
+        file_name = "G:/慕课网课程/AdvancePython/fbobject_idnew.txt"
+        with open(file_name, encoding="utf8", mode="r") as f_open:
+            for count, line in enumerate(f_open):
+                if count < total_nums:
+                    all_data.append(line)
+                else:
+                    break
+
+        for x in range(target_nums):
+            random_index = randint(0, total_nums)
+            if all_data[random_index] not in target_data:
+                target_data.append(all_data[random_index])
+                if len(target_data) == target_nums:
+                    break
+
+        return all_data, target_data
+
+    def load_dict_data(total_nums, target_nums):
+        """
+        从文件中读取数据，以dict的方式返回
+        :param total_nums: 读取的数量
+        :param target_nums: 需要查询的数据的数量
+        """
+        all_data = {}
+        target_data = []
+        file_name = "G:/慕课网课程/AdvancePython/fbobject_idnew.txt"
+        with open(file_name, encoding="utf8", mode="r") as f_open:
+            for count, line in enumerate(f_open):
+                if count < total_nums:
+                    all_data[line] = 0
+                else:
+                    break
+        all_data_list = list(all_data)
+        for x in range(target_nums):
+            random_index = randint(0, total_nums-1)
+            if all_data_list[random_index] not in target_data:
+                target_data.append(all_data_list[random_index])
+                if len(target_data) == target_nums:
+                    break
+
+        return all_data, target_data
+
+
+    def find_test(all_data, target_data):
+        #测试运行时间
+        test_times = 100
+        total_times = 0
+        import time
+        for i in range(test_times):
+            find = 0
+            start_time = time.time()
+            for data in target_data:
+                if data in all_data:
+                    find += 1
+            last_time = time.time() - start_time
+            total_times += last_time
+        return total_times/test_times
+
+
+    if __name__ == "__main__":
+        # all_data, target_data = load_list_data(10000, 1000)
+        # all_data, target_data = load_list_data(100000, 1000)
+        # all_data, target_data = load_list_data(1000000, 1000)
+
+
+        # all_data, target_data = load_dict_data(10000, 1000)
+        # all_data, target_data = load_dict_data(100000, 1000)
+        # all_data, target_data = load_dict_data(1000000, 1000)
+        all_data, target_data = load_dict_data(2000000, 1000)
+        last_time = find_test(all_data, target_data)
+
+        #dict查找的性能远远大于list
+        #在list中随着list数据的增大 查找时间会增大
+        #在dict中查找元素不会随着dict的增大而增大
+        print(last_time)
+
+    #1.  dict的key或者set的值 都必须是可以hash的
+    #不可变对象 都是可hash的， str， fronzenset， tuple，自己实现的类 __hash__
+    #2. dict的内存花销大，但是查询速度快， 自定义的对象 或者python内部的对象都是用dict包装的
+    # 3. dict的存储顺序和元素添加顺序有关
+    # 4. 添加数据有可能改变已有数据的顺序
 
 ## 4.set和frozenset
+    #set 集合 fronzenset (不可变集合) 无序， 不重复
+    # s = set('abcdee')
+    # s = set(['a','b','c','d','e'])
+    s = {'a','b', 'c'}
+    # s = frozenset("abcde") #frozenset 可以作为dict的key
+    # print(s)
+
+    #向set添加数据
+    another_set = set("cef")
+    re_set = s.difference(another_set)
+    re_set = s - another_set
+    re_set = s & another_set
+    re_set = s | another_set
+
+    #set性能很高
+    # | & -  #集合运算
+    print(re_set)
+
+    print (s.issubset(re_set))
+    # if "c" in re_set:
+    #     print ("i am in set")
 
 ## 5.dict和set的实现原理
+
+# 六、对象引用、可变性和垃圾回收
+
+## 1. python的变量是什么
+    #python和java中的变量本质不一样，python的变量实质上是一个指针 int str， 便利贴
+
+    a = 1
+    a = "abc"
+    #1. a贴在1上面
+    #2. 先生成对象 然后贴便利贴
+
+    a = [1,2,3]
+    b = a
+    print (id(a), id(b))
+    print (a is b)
+    # b.append(4)
+    # print (a)
+
+ 
+## 2.`==`和`is`的区别
+python内部有intern机制将一定范围的小整数定成全局唯一的，当=赋值时不会创建新对象。   
+`a == b`值相等，list李有`__eq__` 
+
+    a = [1,2,3,4]
+    b = [1,2,3,4]
+
+    class People:
+        pass
+
+    person = People()
+    if type(person) is People:
+        print ("yes")
+    # print(a == b)
+    # print (id(a), id(b))
+    # print (a is b)
+
+## 3.`del`和垃圾回收      
+
+del将引用计数器-1，将计数器减到0时回收    
+
+    #cpython中垃圾回收的算法是采用 引用计数
+    a = object()
+    b = a
+    del a
+    print(b)
+    print(a)
+    class A:
+        def __del__(self):
+            pass
+
+
+## 4.一个经典的错误
+
+    def add(a, b):
+    a += b
+    return a
+
+    class Company:
+        def __init__(self, name, staffs=[]):
+            self.name = name
+            self.staffs = staffs
+        def add(self, staff_name):
+            self.staffs.append(staff_name)
+        def remove(self, staff_name):
+            self.staffs.remove(staff_name)
+
+    if __name__ == "__main__":
+        com1 = Company("com1", ["bobby1", "bobby2"])
+        com1.add("bobby3")
+        com1.remove("bobby1")
+        print (com1.staffs)
+
+        com2 = Company("com2")
+        com2.add("bobby")
+        print(com2.staffs)
+
+        print (Company.__init__.__defaults__)
+
+        com3 = Company("com3")
+        com3.add("bobby5")
+        print (com2.staffs)
+        print (com3.staffs)
+        print (com2.staffs is com3.staffs)
+
+        # a = 1
+        # b = 2
+        #
+        # a = [1,2]
+        # b = [3,4]
+        #
+        # a = (1, 2)
+        # b = (3, 4)
+        #
+        # c = add(a, b)
+        #
+        # print(c)
+        # print(a, b)
