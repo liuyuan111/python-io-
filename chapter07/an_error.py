@@ -29,16 +29,16 @@ if __name__ == "__main__":
     print (com3.staffs)
     print (com2.staffs is com3.staffs)
 
-    # a = 1
-    # b = 2
-    #
+    a = 1
+    b = 2
+    
     # a = [1,2]
     # b = [3,4]
     #
     # a = (1, 2)
     # b = (3, 4)
     #
-    # c = add(a, b)
-    #
-    # print(c)
-    # print(a, b)
+    c = add(a, b)
+    
+    print(c)
+    print(a, b)
