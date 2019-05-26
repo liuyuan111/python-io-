@@ -905,7 +905,7 @@ bisect函数是二分查找，既可以用来插入，当然也可以用来检�
 
 ## 5.dict和set的实现原理
 
-# 六、对象引用、可变性和垃圾回收
+# 七、对象引用、可变性和垃圾回收
 
 ## 1. python的变量是什么
     #python和java中的变量本质不一样，python的变量实质上是一个指针 int str， 便利贴
@@ -955,7 +955,7 @@ del将引用计数器-1，将计数器减到0时回收
             pass
 
 
-## 4.一个经典的错误
+## 4.一个经典的参数错误
 
     def add(a, b):
     a += b
@@ -1001,3 +1001,35 @@ del将引用计数器-1，将计数器减到0时回收
         #
         # print(c)
         # print(a, b)
+
+# 八、元类编程
+
+## 1.property动态属性
+
+    from datetime import date, datetime
+    class User:
+        def __init__(self, name, birthday):
+            self.name = name
+            self.birthday = birthday
+            self._age = 0
+
+        # def get_age(self):
+        #     return datetime.now().year - self.birthday.year
+
+        @property
+        def age(self):
+            return datetime.now().year - self.birthday.year
+
+        @age.setter
+        def age(self, value):
+            self._age = value
+
+    if __name__ == "__main__":
+        user = User("bobby", date(year=1987, month=1, day=1))
+        user.age = 30
+        print (user._age)
+        print(user.age)
+
+
+## 2. `__getattr__,__getattribute__魔法函数`
+    
