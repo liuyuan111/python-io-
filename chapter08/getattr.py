@@ -1,5 +1,6 @@
 #__getattr__, __getattribute__
 #__getattr__ 就是在查找不到属性的时候调用
+#__getattribute__把持了所以属性访问入口
 from datetime import date
 class User:
     def __init__(self,info={}):

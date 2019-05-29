@@ -1004,7 +1004,10 @@ del将引用计数器-1，将计数器减到0时回收
 
 # 八、元类编程
 
-## 1.property动态属性
+## 1.property动态属性       
+使用` @property`装饰器把age函数变成属性描述符 ，通过`user.age`来访问        
+使用`@age.setter`来设置
+
 
     from datetime import date, datetime
     class User:
@@ -1027,9 +1030,30 @@ del将引用计数器-1，将计数器减到0时回收
     if __name__ == "__main__":
         user = User("bobby", date(year=1987, month=1, day=1))
         user.age = 30
-        print (user._age)
-        print(user.age)
+        print (user._age)           #30
+        print(user.age)             #31
 
 
 ## 2. `__getattr__,__getattribute__魔法函数`
-    yes
+    
+`__getattr__ `就是在查找不到属性的时候调用          
+`__getattribute__`把持了所以属性访问入口            
+
+    from datetime import date
+    class User:
+        def __init__(self,info={}):
+            self.info = info
+
+        def __getattr__(self, item):
+            return self.info[item]
+
+        # def __getattribute__(self, item):
+        #     return "bobby"
+
+    if __name__ == "__main__":
+        user = User(info={"company_name":"imooc", "name":"bobby"})
+        print(user.company_name)    #imooc
+        print(user.test)            #bobby  来自`__getattribute__`
+
+
+## 3. 属性描述符和属性查找过程

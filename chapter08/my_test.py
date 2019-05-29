@@ -1,1 +1,1 @@
-from chapter08.property_test import User
+from property_test import User
