@@ -1057,6 +1057,118 @@ del将引用计数器-1，将计数器减到0时回收
 
 
 ## 3. 属性描述符和属性查找过程
-yes
-no
-010
+### **属性描述符简介：**
+    描述符对象一般是作为其他类对象的属性而存在。在其内部定义了三个方法用来实现属性对象的查找、设置、删除行为。这三个方法分别是：
+
+        get(self, instance, owner)：定义当试图取出描述符的值时的行为。
+        set(self, instance,value)：定义当描述符的设定值或改变时的行为。
+        delete(self, instance)：定义当描述符的值被删除时的行为。
+        只要实现__get__、set、__delete__方法中的一个就可以认为是描述符；
+        只实现__get__方法的对象是非数据描述符，在初始化之后它们只能被读取；
+        同时实现__get__和__set__的对象是数据描述符，这种属性是可读写的。
+
+### **属性描述符查找过程：**
+ 首先调用__getattribute__。如果类定义了__getattr__方法， 那么在__getattribute__抛出AttributeError 的时候就会调用到__getattr__，而对于描述符__get__的调用，则是发生在__getattribute__内部的。
+
+
+
+        from datetime import date, datetime
+        import numbers
+
+        class IntField:
+            #数据描述符
+            def __get__(self, instance, owner):
+                return self.value
+            def __set__(self, instance, value):
+                if not isinstance(value, numbers.Integral):
+                    raise ValueError("int value need")
+                if value < 0:
+                    raise ValueError("positive value need")
+                self.value = value
+            def __delete__(self, instance):
+                pass
+
+
+        class NonDataIntField:
+            #非数据属性描述符
+            def __get__(self, instance, owner):
+                return self.value
+
+        class User:
+            age = IntField()
+            # age = NonDataIntField()
+
+        '''
+        如果user是某个类的实例，那么user.age（以及等价的getattr(user,’age’)）
+        首先调用__getattribute__。如果类定义了__getattr__方法，
+        那么在__getattribute__抛出 AttributeError 的时候就会调用到__getattr__，
+        而对于描述符(__get__）的调用，则是发生在__getattribute__内部的。
+        user = User(), 那么user.age 顺序如下：
+
+        （1）如果“age”是出现在User或其基类的__dict__中， 且age是data descriptor， 那么调用其__get__方法, 否则
+
+        （2）如果“age”出现在user的__dict__中， 那么直接返回 obj.__dict__[‘age’]， 否则
+
+        （3）如果“age”出现在User或其基类的__dict__中
+
+        （3.1）如果age是non-data descriptor，那么调用其__get__方法， 否则
+
+        （3.2）返回 __dict__[‘age’]
+
+        （4）如果User有__getattr__方法，调用__getattr__方法，否则
+
+        （5）抛出AttributeError
+
+        '''
+
+        # class User:
+        #
+        #     def __init__(self, name, email, birthday):
+        #         self.name = name
+        #         self.email = email
+        #         self.birthday = birthday
+        #         self._age = 0
+        #
+        #     # def get_age(self):
+        #     #     return datetime.now().year - self.birthday.year
+        #
+        #     @property
+        #     def age(self):
+        #         return datetime.now().year - self.birthday.year
+        #
+        #     @age.setter
+        #     def age(self, value):
+        #         #检查是否是字符串类型
+        #         self._age = value
+
+        if __name__ == "__main__":
+            user = User()
+            user.__dict__["age"] = "abc"
+            print (user.__dict__)
+            print (user.age)
+            # print (getattr(user, 'age'))
+            # user = User("bobby", date(year=1987, month=1, day=1))
+            # user.age = 30
+            # print (user._age)
+            # print(user.age)
+
+## 4.`__new__`和`__init__`
+new方法可以自定义类生成过程，参数传递是**类**，（类的生成过程）
+init方法传递对象，在new方法调用生成对象之后   ，（对象的生成过程）
+
+    class User:
+        def __new__(cls, *args, **kwargs):
+            print (" in new ")
+            return super().__new__(cls)
+        def __init__(self, name):
+            print (" in init")
+            pass
+    a = int()
+    #new 是用来控制对象的生成过程， 在对象生成之前
+    #init是用来完善对象的
+    #如果new方法不返回对象， 则不会调用init函数
+    if __name__ == "__main__":
+        user = User(name="bobby")
+
+
+
