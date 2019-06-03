@@ -1171,4 +1171,26 @@ init方法传递对象，在new方法调用生成对象之后   ，（对象的�
         user = User(name="bobby")
 
 
+## 5.自定义元类
+__metaclass__ 属性
 
+metaclass，直译为元类，简单的解释就是：
+当我们定义了类以后，就可以根据这个类创建出实例，所以：先定义类，然后创建实例。
+但是如果我们想创建出类呢？那就必须根据metaclass创建出类，所以：先定义metaclass，然后创建类。
+连接起来就是：先定义metaclass，就可以创建类，最后创建实例。
+所以，metaclass允许你创建类或者修改类。换句话说，你可以把类看成是metaclass创建出来的“实例”。
+
+    class MyObject(object):
+        __metaclass__ = something…
+    […]
+
+Python 就会用元类来创建类 MyObject。当你写下 class MyObject(object)，但是类对象 MyObject 还没有在内存中创建。Python 会在类的定义中寻找 `__metaclass__` 属性，如果找到了，Python 就会用它来创建类 MyObject，如果没有找到，就会用内建的 type 函数来创建这个类。
+
+**判断流程**
+
+    class Foo(Bar):
+    pass
+
+首先判断 Foo 中是否有 __metaclass__ 这个属性？如果有，Python 会在内存中通过 __metaclass__ 创建一个名字为 Foo 的类对象（注意，这里是类对象）。如果 Python 没有找到__metaclass__ ，它会继续在 Bar（父类）中寻找__metaclass__ 属性，并尝试做和前面同样的操作。如果 Python在任何父类中都找不到 __metaclass__ ，它就会在模块层次中去寻找 __metaclass__ ，并尝试做同样的操作。如果还是找不到` metaclass` ,Python 就会用内置的 type 来创建这个类对象。
+
+**这个属性可以放些什么？**
