@@ -1246,4 +1246,4 @@ Python 就会用元类来创建类 MyObject。当你写下 class MyObject(object
 
 
 ### 自定义ORM系统：
-代码如下[MyORM.py](/chapter08/MyORM.py)
+代码如下[MyORM.py](/chapter08/MyOrm.py)
