@@ -1193,4 +1193,57 @@ Python 就会用元类来创建类 MyObject。当你写下 class MyObject(object
 
 首先判断 Foo 中是否有 __metaclass__ 这个属性？如果有，Python 会在内存中通过 __metaclass__ 创建一个名字为 Foo 的类对象（注意，这里是类对象）。如果 Python 没有找到__metaclass__ ，它会继续在 Bar（父类）中寻找__metaclass__ 属性，并尝试做和前面同样的操作。如果 Python在任何父类中都找不到 __metaclass__ ，它就会在模块层次中去寻找 __metaclass__ ，并尝试做同样的操作。如果还是找不到` metaclass` ,Python 就会用内置的 type 来创建这个类对象。
 
-**这个属性可以放些什么？**
+
+    #类也是对象，type创建类的类
+    def create_class(name):
+        if name == "user":
+            class User:
+                def __str__(self):
+                    return "user"
+            return User
+        elif name == "company":
+            class Company:
+                def __str__(self):
+                    return "company"
+            return Company
+
+    #type动态创建类
+    # User = type("User", (), {})
+
+    def say(self):
+        return "i am user"
+        # return self.name
+
+
+    class BaseClass():
+        def answer(self):
+            return "i am baseclass"
+
+
+    class MetaClass(type):
+        def __new__(cls, *args, **kwargs):
+            return super().__new__(cls, *args, **kwargs)
+
+    from collections.abc import *
+
+    #什么是元类， 元类是创建类的类 对象<-class(对象)<-type（元类）
+    class User(metaclass=MetaClass):
+        def __init__(self, name):
+            self.name = name
+        def __str__(self):
+            return "user"
+    #python中类的实例化过程，会首先寻找metaclass，通过metaclass去创建user类
+    #去创建类对象，实例
+
+    if __name__ == "__main__":
+        # MyClass = create_class("user")
+        # my_obj = MyClass()
+        # print(type(my_obj))
+
+        # User = type("User", (BaseClass, ), {"name":"user", "say":say})
+        my_obj = User(name="bobby")
+        print(my_obj)
+
+
+### 自定义ORM系统：
+代码如下[MyORM.py](/chapter08/MyORM.py)
