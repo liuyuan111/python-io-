@@ -1256,5 +1256,5 @@ Python 就会用元类来创建类 MyObject。当你写下 class MyObject(object
 ## 2. [迭代器和可迭代对象](/chapter09/iterable_iterator.py)
 ## 3. [生成器函数](/chapter09/gen_func.py)
 ## 4. [生成器原理](/chapter09/how_gen_work.py)
-## 5. 通过UserList来看生成器的应用
-## 6. 生成器实现大文件读取
+## 5. [通过UserList来看生成器的应用](/chapter09/how_gen_work.py)
+## 6. [生成器实现大文件读取](/chapter09/read_file.py)

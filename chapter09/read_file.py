@@ -1,20 +1,21 @@
-#500G, 特殊 一行
+# 500G, 特殊 一行
 def myreadlines(f, newline):
-  buf = ""
-  while True:
-    while newline in buf:
-      pos = buf.index(newline)
-      yield buf[:pos]
-      buf = buf[pos + len(newline):]
-    chunk = f.read(4096)
+    buf = ""
+    while True:
+        while newline in buf:
+            pos = buf.index(newline)
+            yield buf[:pos]
+            buf = buf[pos+len(newline):]
+        chunk = f.read(4096)
 
-    if not chunk:
-      #说明已经读到了文件结尾
-      yield buf
-      break
-    buf += chunk
+        if not chunk:
+            # 说明已经读到了文件结尾
 
-with open("input.txt") as f:
-    for line in myreadlines(f, "{|}"):
-        print (line)
+            yield buf
+            break
+        buf += chunk
 
+
+with open('chapter09/input.txt') as f:
+    for line in myreadlines(f, '{|}'):
+        print(line)
