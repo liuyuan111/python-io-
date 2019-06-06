@@ -1258,3 +1258,14 @@ Python 就会用元类来创建类 MyObject。当你写下 class MyObject(object
 ## 4. [生成器原理](/chapter09/how_gen_work.py)
 ## 5. [通过UserList来看生成器的应用](/chapter09/how_gen_work.py)
 ## 6. [生成器实现大文件读取](/chapter09/read_file.py)
+
+
+# 十、python socket编程
+## 1.HTTP,Socket,TCP
+<img src="images/http.jpg">
+
+## 2. client和server实现通信
+<img src="images/socket.jpg">       
+## 3. [socket实现聊天和多用户连接](/chaper10/socket_client.py)
+ [服务端](/chapter10/socket_server.py)
+## 4.[socket模拟http请求](/chapter10/socket_http.py)
