@@ -1269,3 +1269,17 @@ Python 就会用元类来创建类 MyObject。当你写下 class MyObject(object
 ## 3. [socket实现聊天和多用户连接](/chaper10/socket_client.py)
  [服务端](/chapter10/socket_server.py)
 ## 4.[socket模拟http请求](/chapter10/socket_http.py)
+
+# 十一、多线程，多进程和线程池
+## 1.[python中的GIL](/chapter11/python_gil.py)
+简介：GIL的全称为Global Interpreter Lock，全局解释器锁。    
+  python的代码执行由python虚拟机（也叫解释器主循环，CPython版本）来控制，python在设计之初就考虑到在解释器的主循环中，同时只有一个线程在运行。即在任意时刻只有一个线程在解释器中运行。对python虚拟机访问的控制由全局解释锁GIL控制，正是这个锁来控制同一时刻只有一个线程能够运行。        
+  **gil会根据执行的字节码行数以及时间片释放gil，gil在遇到io的操作时候主动释放**
+
+## 2.[多线程编程](/chapter11/python_thread.py) 
+
+操作系统调度的最小单元是线程，对于io操作来说，多线程和多进程性能差别不大
+
+## 3.[线程间通信](/hapter11/thread_dequeue_test.py)
+
+
